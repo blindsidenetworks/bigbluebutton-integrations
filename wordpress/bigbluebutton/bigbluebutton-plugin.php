@@ -2,7 +2,7 @@
 /* 
 Plugin Name: BigBlueButton
 Plugin URI: http://blindsidenetworks.com/integration
-Version: 1.0.2
+Version: 1.0.3
 Author: Blindside Networks
 Author URI: http://blindsidenetworks.com/
 Description: BigBlueButton is an open source web conferencing system. This plugin integrates BigBlueButton into WordPress allowing bloggers to create and manage meetings rooms to interact with their readers. For more information on setting up your own BigBlueButton server or for using an external hosting provider visit http://bigbluebutton.org/support
@@ -28,7 +28,25 @@ Versions:
                     (email : omar DOT shammas [a t ] g m ail DOT com)
 	1.0.1 	--  version written by Omar Shammas
 	1.0.2 	--  version written by Omar Shammas
+	1.0.3 	--  version extended by Jesus Federico
+                    (email : jesus [a t ] 1 2 3 it DOT ca)
 */
+
+//================================================================================
+//---------------------------Standard Plugin definition---------------------------
+//================================================================================
+
+//validate
+global $wp_version;
+$exit_msg = "This plugin has been designed for Wordpress 2.5, please upgrade your current one.";
+if(version_compare($wp_version, "2.5", "<")) { exit($exit_msg); }
+
+//constants
+define("BIGBLUEBUTTON_DIR", WP_PLUGIN_URL . '/bigbluebutton/' );
+
+add_shortcode('bigbluebutton', 'bigbluebutton_shortcode');
+add_shortcode('Bigbluebutton', 'bigbluebutton_shortcode');
+add_shortcode('BigBlueButton', 'bigbluebutton_shortcode');
 
 //================================================================================
 //------------------Required Libraries and Global Variables-----------------------
@@ -114,8 +132,6 @@ if (!class_exists("bigbluebuttonPlugin")) {
 					
 				}
 				
-				
-				
 			}
 			
 			if( !get_option('mt_bbb_url') ) update_option( "mt_bbb_url", "http://test-install.blindsidenetworks.com/bigbluebutton/" );
@@ -178,15 +194,43 @@ function bbb_warning_handler($errno, $errstr) {
 	//Do Nothing
 }
 
+
+//================================================================================
+//---------------------------------ShortCode--------------------------------------
+// Added: Jun 22, 2011 by JFederic
+//================================================================================
+//Inserts a bigbluebutton form on a post or page of the blog
+function bigbluebutton_shortcode($args) {
+	session_start();
+	extract($args);
+
+	bigbluebutton_form($args);
+
+}
+
 //================================================================================
 //---------------------------------Widget-----------------------------------------
+// Modified: Jun 22, 2011 by JFederic
 //================================================================================
 //Inserts a bigbluebutton widget on the siderbar of the blog
 function bigbluebutton_sidebar($args) {
 	session_start();
 	extract($args);
+	
 	echo $before_widget;
 	echo $before_title;?>BigBlueButton<?php echo $after_title;
+
+	bigbluebutton_form($args);
+
+}
+
+//================================================================================
+//---------------------------------Widget-----------------------------------------
+// Added: Jun 22, 2011 by JFederic
+//================================================================================
+//Create the form called by the Shortcode and Widget functions
+
+function bigbluebutton_form($args) {
 
 	global $wpdb, $url_name, $salt_name, $meetingID_name, $meetingVersion_name, $attendeePW_name, $moderatorPW_name;
 	
@@ -197,7 +241,6 @@ function bigbluebutton_sidebar($args) {
 	//Gets all the meetings from wordpress database
 	$table_name = $wpdb->prefix . "bbb_meetingRooms";
 	$listOfMeetings = $wpdb->get_results("SELECT meetingID, meetingVersion, moderatorPW FROM ".$table_name." ORDER BY meetingID");
-		
 			
 	$dataSubmitted = false;
 	$validMeeting = false;
@@ -248,7 +291,6 @@ function bigbluebutton_sidebar($args) {
 			}
 		}
 	}
-			
 
 	//Displays the meetings in the wordpress database. 
 	foreach ($listOfMeetings as $meeting) {		
@@ -757,7 +799,6 @@ function bbb_create_meetings() {
 			$meetingID = '';
 			$attendeePW = '';
 			$moderatorPW = '';
-				
 				
 		}		
     }
